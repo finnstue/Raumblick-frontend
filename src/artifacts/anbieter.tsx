@@ -120,7 +120,7 @@ const SalesRepresentativeFlow = () => {
         customerName: 'Max Mustermann', 
         scanDate: '2025-03-20', 
         roomType: 'Küche', 
-        status: 'Scan abgeschlossen', // Changed from 'Ausstehender Scan'
+        status: 'Scan abgeschlossen',
       },
       { 
         id: 2, 
@@ -128,7 +128,7 @@ const SalesRepresentativeFlow = () => {
         customerName: 'Laura Schmidt', 
         scanDate: '2025-03-19', 
         roomType: 'Wohnzimmer', 
-        status: 'Scan abgeschlossen',
+        status: 'Angebot gesendet',  // Make sure status is 'Angebot gesendet'
       },
       { 
         id: 3, 
@@ -555,19 +555,172 @@ const SalesRepresentativeFlow = () => {
     // Update customerInfo when selecting a scan
     setCustomerInfo({
       name: scan.customerName,
-      email: scan.customerId.startsWith('C1001') ? 'max.mustermann@example.com' : 
-            scan.customerId === 'C1004' ? 'anna.mueller@example.com' : 
+      email: scan.customerId === 'C1004' ? 'anna.mueller@example.com' : 
+            scan.customerId === 'C1002' ? 'laura.schmidt@example.com' : 
+            scan.customerId.startsWith('C1001') ? 'max.mustermann@example.com' : 
             `${scan.customerName.toLowerCase().replace(' ', '.')}@example.com`,
-      address: "Beispielweg 42, 10115 Berlin"
+      address: scan.customerId === 'C1004' ? "Leopoldstraße 87, 80802 München" : 
+              scan.customerId === 'C1002' ? "Gartenstraße 15, 80539 München" : 
+              "Beispielweg 42, 10115 Berlin"
     });
     
     if (scan.status === 'Angebot gesendet') {
-      // Show chat interface directly for customers with sent quotes
+      // Set specific quote items based on customer
+      if (scan.customerName === 'Anna Müller') {
+        setQuotationItems([
+          {
+            id: 201,
+            name: 'Executive Desk "Professional Plus"',
+            category: 'Office Furniture',
+            price: 1299,
+            quantity: 4,
+            color: 'Natural Oak/Black',
+            material: 'Solid Wood/Steel',
+            dimensions: '180x80x75cm'
+          },
+          {
+            id: 202,
+            name: 'Ergonomic Office Chair "Comfort Pro"',
+            category: 'Office Furniture',
+            price: 799,
+            quantity: 4,
+            color: 'Black',
+            material: 'Mesh/Aluminum',
+            dimensions: 'Adjustable'
+          },
+          {
+            id: 203,
+            name: 'Storage Cabinet System',
+            category: 'Storage',
+            price: 649,
+            quantity: 2,
+            color: 'Oak/White',
+            material: 'MDF/Wood Veneer',
+            dimensions: '160x45x120cm'
+          },
+          {
+            id: 204,
+            name: 'LED Desk Lamp "Focus"',
+            category: 'Lighting',
+            price: 129,
+            quantity: 4,
+            color: 'Silver',
+            material: 'Aluminum',
+            dimensions: 'Adjustable arm'
+          },
+          {
+            id: 205,
+            name: 'Monitor Stand with Drawer',
+            category: 'Accessories',
+            price: 189,
+            quantity: 4,
+            color: 'Black',
+            material: 'Aluminum/Wood',
+            dimensions: '60x30x12cm'
+          }
+        ]);
+
+        // Show chat interface with Anna's specific messages
+        setChatMessages([
+          {
+            id: 1,
+            sender: 'system',
+            message: 'Angebot gesendet',
+            timestamp: new Date(),
+          },
+          {
+            id: 2,
+            sender: 'sales',
+            message: `
+              <div class="quote-message">
+                <p>Sehr geehrte Frau Müller,</p>
+                <p>wie besprochen sende ich Ihnen das Angebot für Ihr neues Freiraum-Büro. Die ausgewählten Möbel sind auf Ihre Bedürfnisse für produktives und ergonomisches Arbeiten abgestimmt und entsprechen den aktuellen Richtlinien zur Arbeitsplatzsicherheit. Besonders haben wir auf optimalen Lichteinfall und ergonomische Anordnung der Möbel geachtet, um Ihre Gesundheit am Arbeitsplatz zu fördern.</p>
+                <a href="/quote/${scan.id}" class="quote-link">
+                  <div class="quote-preview">
+                    <div class="quote-details">
+                      <span class="quote-title">Büroeinrichtung #A2024-104</span>
+                      <span class="quote-price">${(calculateTotal(quotationItems) * 1.19).toLocaleString()} €</span>
+                    </div>
+                  </div>
+                </a>
+                <p>Die Lieferzeit beträgt 3-4 Wochen. Der Aufbauservice ist im Preis inbegriffen, und wir kümmern uns auch um die fachgerechte Verkabelung Ihres Arbeitsplatzes.</p>
+                <p>Besonders empfehle ich die ergonomische Einstellung der Bürostühle durch unseren Experten, die wir kostenlos anbieten.</p>
+                <p>Haben Sie noch Fragen zum Angebot oder zu einzelnen Produkten? Ich stehe Ihnen gerne zur Verfügung.</p>
+                <p>Mit freundlichen Grüßen,<br/>Finn Stürenburg</p>
+              </div>
+            `,
+            timestamp: new Date(Date.now() - 7200000), // 2 hours ago
+            isHtml: true
+          },
+          {
+            id: 3,
+            sender: 'customer',
+            message: 'Vielen Dank für das detaillierte Angebot! Der Schreibtisch gefällt mir sehr gut. Können Sie mir noch sagen, ob die Tischplatte höhenverstellbar ist?',
+            timestamp: new Date(Date.now() - 3600000) // 1 hour ago
+          },
+          {
+            id: 4,
+            sender: 'sales',
+            message: 'Ja, der "Professional Plus" Schreibtisch ist elektrisch höhenverstellbar von 65-125cm. Perfekt für flexibles Arbeiten im Sitzen und Stehen. Soll ich Ihnen noch die technischen Details der Steuerung zusenden?',
+            timestamp: new Date(Date.now() - 3300000) // 55 minutes ago
+          }
+        ]);
+        setShowSentSuccessScreen(true);
+        return;
+      }
+      
+      // Set Laura's specific quote items
+      if (scan.customerName === 'Laura Schmidt') {
+        setQuotationItems([
+          {
+            id: 101,
+            name: 'Modern Sofa "Comfort Plus"',
+            category: 'Living Room',
+            price: 1899,
+            quantity: 1,
+            color: 'Beige',
+            material: 'Premium Fabric',
+            dimensions: '240x95x85cm'
+          },
+          {
+            id: 102,
+            name: 'Coffee Table "Milano"',
+            category: 'Living Room',
+            price: 549,
+            quantity: 1,
+            color: 'Walnut/Black',
+            material: 'Solid Wood/Metal',
+            dimensions: '120x60x45cm'
+          },
+          {
+            id: 103,
+            name: 'LED Floor Lamp "Ambience"',
+            category: 'Lighting',
+            price: 299,
+            quantity: 1,  // Quantity hinzugefügt
+            color: 'Brushed Steel',
+            material: 'Metal/Glass',
+            dimensions: 'H: 165cm, Ø: 35cm'
+          },
+          {
+            id: 104,
+            name: 'Media Console "Entertainment Pro"',
+            category: 'Storage',
+            price: 899,
+            quantity: 1,  // Quantity hinzugefügt
+            color: 'Walnut',
+            material: 'Engineered Wood',
+            dimensions: '180x45x55cm'
+          }
+        ]);
+      }
+
+      // Show chat interface with Laura's specific messages
       setChatMessages([
         {
           id: 1,
           sender: 'system',
-          message: 'Angebot an Kunde gesendet',
+          message: 'Angebot gesendet',
           timestamp: new Date(),
         },
         {
@@ -575,14 +728,13 @@ const SalesRepresentativeFlow = () => {
           sender: 'sales',
           message: `
             <div class="quote-message">
-              <p>Sehr geehrte(r) ${scan.customerName},</p>
-              <p>ich habe Ihnen ein Angebot zugesendet.</p>
-              <a href="/quote/${scan.id}" class="quote-link">
+              <p>Sehr geehrte${customerInfo.name === "Max Mustermann" ? "r" : ""} ${customerInfo.name},</p>
+              <p>ich habe Ihnen soeben ein Angebot zugesendet.</p>
+              <a href="/quote/${selectedScan?.id}" class="quote-link">
                 <div class="quote-preview">
-                  <img src="/quote-preview.jpg" alt="Angebot Vorschau" class="quote-image" />
                   <div class="quote-details">
-                    <span class="quote-title">Angebot #${scan.id}</span>
-                    <span class="quote-price">Klicken Sie hier um das Angebot anzusehen</span>
+                    <span class="quote-title">Angebot #1</span>
+                    <span class="quote-price">${(calculateTotal(quotationItems) * 1.19).toLocaleString()} €</span>
                   </div>
                 </div>
               </a>
@@ -739,14 +891,13 @@ const SalesRepresentativeFlow = () => {
         sender: 'sales',
         message: `
           <div class="quote-message">
-            <p>Sehr geehrte ${customerInfo.name},</p>
+            <p>Sehr geehrte${customerInfo.name === "Max Mustermann" ? "r" : ""} ${customerInfo.name},</p>
             <p>ich habe Ihnen soeben ein Angebot zugesendet.</p>
             <a href="/quote/${selectedScan?.id}" class="quote-link">
               <div class="quote-preview">
-                <img src="/quote-preview.jpg" alt="Angebot Vorschau" class="quote-image" />
                 <div class="quote-details">
-                  <span class="quote-title">Angebot #${selectedScan?.id}</span>
-                  <span class="quote-price">${(quotationItems.reduce((sum, item) => sum + item.price, 0) * 1.19).toLocaleString()} €</span>
+                  <span class="quote-title">Angebot #1</span>
+                  <span class="quote-price">${(calculateTotal(quotationItems) * 1.19).toLocaleString()} €</span>
                 </div>
               </div>
             </a>
@@ -759,6 +910,11 @@ const SalesRepresentativeFlow = () => {
       }
     ]);
     setShowSentSuccessScreen(true);
+  };
+  
+  // Ändern Sie die Preisberechnungen, um die Mengen zu berücksichtigen
+  const calculateTotal = (items) => {
+    return items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
   };
   
   return (
@@ -1324,9 +1480,7 @@ const SalesRepresentativeFlow = () => {
                     <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
                       <span className="font-medium text-gray-800">Total:</span>
                       <span className="font-medium text-gray-800">
-                        {quotationItems
-                          .reduce((total, item) => total + item.price, 0)
-                          .toLocaleString()} €
+                        {calculateTotal(quotationItems).toLocaleString()} €
                       </span>
                     </div>
                   </div>
@@ -1437,10 +1591,10 @@ const SalesRepresentativeFlow = () => {
                               <div className="text-sm text-gray-500">{item.dimensions}</div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              1
+                              {item.quantity || 1}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                              {item.price.toLocaleString()} €
+                              {(item.price * (item.quantity || 1)).toLocaleString()} €
                             </td>
                           </tr>
                         ))}
@@ -1451,7 +1605,7 @@ const SalesRepresentativeFlow = () => {
                             Subtotal
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
-                            {quotationItems.reduce((sum, item) => sum + item.price, 0).toLocaleString()} €
+                            {calculateTotal(quotationItems).toLocaleString()} €
                           </td>
                         </tr>
                         <tr>
@@ -1459,7 +1613,7 @@ const SalesRepresentativeFlow = () => {
                             VAT (19%)
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
-                            {(quotationItems.reduce((sum, item) => sum + item.price, 0) * 0.19).toLocaleString()} €
+                            {(calculateTotal(quotationItems) * 0.19).toLocaleString()} €
                           </td>
                         </tr>
                         <tr>
@@ -1467,7 +1621,7 @@ const SalesRepresentativeFlow = () => {
                             <strong>Total</strong>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right">
-                            {(quotationItems.reduce((sum, item) => sum + item.price, 0) * 1.19).toLocaleString()} €
+                            {(calculateTotal(quotationItems) * 1.19).toLocaleString()} €
                           </td>
                         </tr>
                       </tfoot>
@@ -1728,9 +1882,10 @@ const SalesRepresentativeFlow = () => {
 
       {/* Add this new Success Screen with Chat */}
       {showSentSuccessScreen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 h-[80vh] flex flex-col">
-            <div className="p-6 border-b border-gray-200">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-start justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full my-4 h-[calc(100vh-8rem)] flex flex-col overflow-hidden"> {/* Changed from h-[calc(100vh-2rem)] to h-[calc(100vh-8rem)] */}
+            {/* Header */}
+            <div className="p-6 border-b border-gray-200 flex-shrink-0">
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -1757,27 +1912,17 @@ const SalesRepresentativeFlow = () => {
               </div>
             </div>
 
-            <div className="flex-1 flex">
+            {/* Content container */}
+            <div className="flex-1 flex overflow-hidden">
               {/* Chat Section */}
-              <div className="flex-1 flex flex-col p-6 overflow-hidden"> {/* Added overflow-hidden */}
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-gray-600">
-                        {customerInfo.name.split(' ').map(n => n[0]).join('')}
-                      </span>
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-medium text-gray-900">{customerInfo.name}</h4>
-                      <p className="text-xs text-gray-500">{customerInfo.email}</p>
-                    </div>
-                  </div>
-                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                    Online
-                  </span>
+              <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Chat header */}
+                <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+                  <h4 className="text-lg font-medium text-gray-900">Chat mit {customerInfo.name}</h4> {/* Updated to include customer name */}
                 </div>
 
-                <div className="flex-1 bg-gray-50 rounded-lg p-4 overflow-y-auto min-h-0"> {/* Added min-h-0 */}
+                {/* Messages container - make sure this scrolls */}
+                <div className="flex-1 px-6 py-4 overflow-y-auto">
                   <div className="space-y-4">
                     {chatMessages.map((msg) => (
                       <div
@@ -1847,7 +1992,8 @@ const SalesRepresentativeFlow = () => {
                   </div>
                 </div>
 
-                <div className="mt-4 flex-shrink-0"> {/* Added flex-shrink-0 */}
+                {/* Input form - keep at bottom */}
+                <div className="px-6 py-4 border-t border-gray-200 flex-shrink-0 bg-white">
                   <form className="flex space-x-2" onSubmit={(e) => {
                     e.preventDefault();
                     const input = e.target.elements.message;
@@ -1878,33 +2024,32 @@ const SalesRepresentativeFlow = () => {
                 </div>
               </div>
 
-              {/* Quotation Preview */}
-              <div className="w-96 border-l border-gray-200 p-6">
+              {/* Quotation Preview Sidebar */}
+              <div className="w-96 border-l border-gray-200 p-6 overflow-y-auto bg-white">
                 <h4 className="text-lg font-medium text-gray-900 mb-4">Angebot Übersicht</h4>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="space-y-4">
-                    <div>
-                      <span className="text-sm text-gray-500">Gesamtbetrag</span>
-                      <div className="text-2xl font-bold text-gray-900">
-                        {(quotationItems.reduce((sum, item) => sum + item.price, 0) * 1.19).toLocaleString()} €
-                      </div>
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-sm text-gray-500">Gesamtbetrag</span>
+                    <div className="text-2xl font-bold text-gray-900">
+                      {(calculateTotal(quotationItems) * 1.19).toLocaleString()} €
                     </div>
-                    <div className="border-t border-gray-200 pt-4">
-                      <span className="text-sm text-gray-500">Status</span>
-                      <div className="flex items-center mt-1">
-                        <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
-                        <span className="text-sm font-medium text-gray-900">Warten auf Antwort</span>
-                      </div>
+                  </div>
+                  <div className="border-t border-gray-200 pt-4">
+                    <span className="text-sm text-gray-500">Status</span>
+                    <div className="flex items-center mt-1">
+                      <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
+                      <span className="text-sm font-medium text-gray-900">Warten auf Antwort</span>
                     </div>
-                    <div className="border-t border-gray-200 pt-4">
-                      <span className="text-sm text-gray-500">Produkte</span>
-                      <div className="mt-2 space-y-2">
-                        {quotationItems.map((item) => (
-                          <div key={item.id} className="text-sm text-gray-900">
-                            {item.name}
-                          </div>
-                        ))}
-                      </div>
+                  </div>
+                  <div className="border-t border-gray-200 pt-4">
+                    <span className="text-sm text-gray-500">Produkte</span>
+                    <div className="mt-2 space-y-2">
+                      {quotationItems.map((item) => (
+                        <div key={item.id} className="text-sm text-gray-900 flex justify-between items-center">
+                          <span>{item.name}</span>
+                          <span className="text-gray-500">{item.quantity}×</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
