@@ -3,7 +3,7 @@ import {
   AlertCircle, Camera, Check, ChevronRight, Circle, Edit3, 
   FileText, Grid, Layers, Maximize, MessageCircle, Rotate3D, 
   Save, Search, Settings, ZoomIn, ZoomOut, Trash2, Move, X,
-  Home,
+  Home, Mail, MessageSquare, Copy, Link, Share2,
   Utensils, Box, TableProperties, Refrigerator, BookmarkMinus, 
   Droplets, Lightbulb, Monitor
 } from 'lucide-react';
@@ -77,11 +77,25 @@ const SalesRepresentativeFlow = () => {
     customerName: '',
     customerId: `C${Math.floor(1000 + Math.random() * 9000)}`, // Generate random ID
     roomType: 'Kitchen',
-    status: 'Pending Scan'
+    status: 'Ausstehender Scan',
+    email: '' // Add email field
   });
   
   // Add new state near other state declarations
-  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+  const [showProjectSuccessScreen, setShowProjectSuccessScreen] = useState(false);
+  const [scanCode, setScanCode] = useState('');
+  const [codeExpiry, setCodeExpiry] = useState(null);
+  
+  // Add these new state declarations near the other states
+  const [showSentSuccessScreen, setShowSentSuccessScreen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    {
+      id: 1,
+      sender: 'system',
+      message: 'Quotation sent to customer',
+      timestamp: new Date(),
+    }
+  ]);
   
   // Refs
   const canvasRef = useRef(null);
@@ -105,32 +119,32 @@ const SalesRepresentativeFlow = () => {
         customerId: 'C1001', 
         customerName: 'Max Mustermann', 
         scanDate: '2025-03-20', 
-        roomType: 'Kitchen', 
-        status: 'Pending Scan',
+        roomType: 'Küche', 
+        status: 'Scan abgeschlossen', // Changed from 'Ausstehender Scan'
       },
       { 
         id: 2, 
         customerId: 'C1002', 
         customerName: 'Laura Schmidt', 
         scanDate: '2025-03-19', 
-        roomType: 'Living Room', 
-        status: 'Scan Completed',
+        roomType: 'Wohnzimmer', 
+        status: 'Scan abgeschlossen',
       },
       { 
         id: 3, 
         customerId: 'C1003', 
         customerName: 'Thomas Weber', 
         scanDate: '2025-03-18', 
-        roomType: 'Bathroom', 
-        status: 'Pending Scan',
+        roomType: 'Badezimmer', 
+        status: 'Ausstehender Scan',
       },
       { 
         id: 4, 
         customerId: 'C1004', 
         customerName: 'Anna Müller', 
         scanDate: '2025-03-17', 
-        roomType: 'Office', 
-        status: 'Quote Sent',
+        roomType: 'Büro', 
+        status: 'Angebot gesendet',
       }
     ];
     
@@ -536,16 +550,61 @@ const SalesRepresentativeFlow = () => {
   // Modify the handleSelectScan function
   const handleSelectScan = (scan) => {
     console.log('Selecting scan for:', scan.customerName);
+    setSelectedScan(scan);
+    
+    // Update customerInfo when selecting a scan
+    setCustomerInfo({
+      name: scan.customerName,
+      email: scan.customerId.startsWith('C1001') ? 'max.mustermann@example.com' : 
+            scan.customerId === 'C1004' ? 'anna.mueller@example.com' : 
+            `${scan.customerName.toLowerCase().replace(' ', '.')}@example.com`,
+      address: "Beispielweg 42, 10115 Berlin"
+    });
+    
+    if (scan.status === 'Angebot gesendet') {
+      // Show chat interface directly for customers with sent quotes
+      setChatMessages([
+        {
+          id: 1,
+          sender: 'system',
+          message: 'Angebot an Kunde gesendet',
+          timestamp: new Date(),
+        },
+        {
+          id: 2,
+          sender: 'sales',
+          message: `
+            <div class="quote-message">
+              <p>Sehr geehrte(r) ${scan.customerName},</p>
+              <p>ich habe Ihnen ein Angebot zugesendet.</p>
+              <a href="/quote/${scan.id}" class="quote-link">
+                <div class="quote-preview">
+                  <img src="/quote-preview.jpg" alt="Angebot Vorschau" class="quote-image" />
+                  <div class="quote-details">
+                    <span class="quote-title">Angebot #${scan.id}</span>
+                    <span class="quote-price">Klicken Sie hier um das Angebot anzusehen</span>
+                  </div>
+                </div>
+              </a>
+              <p>Bitte schauen Sie sich das Angebot in Ruhe an. Bei Fragen stehe ich Ihnen gerne zur Verfügung.</p>
+              <p>Mit freundlichen Grüßen,<br/>Finn Stürenburg</p>
+            </div>
+          `,
+          timestamp: new Date(),
+          isHtml: true
+        }
+      ]);
+      setShowSentSuccessScreen(true);
+      return;
+    }
     
     if (!hasScanData(scan)) {
       console.log('No scan data, showing pending-scan view');
-      setSelectedScan(scan);
-      setCurrentStep('pending-scan');
+      setCurrentStep('ausstehender-scan');
       return;
     }
     
     console.log('Has scan data, showing analysis view');
-    setSelectedScan(scan);
     setCurrentStep('analysis');
     // Reset other states when selecting a new scan
     setSelectedObjects([]);
@@ -624,28 +683,82 @@ const SalesRepresentativeFlow = () => {
     const newScan = {
       id: customerScans.length + 1,
       ...newProjectForm,
-      scanDate: new Date().toISOString().split('T')[0]
+      scanDate: new Date().toISOString().split('T')[0],
+      scanCode: generateScanCode(),
+      codeExpiry: new Date(Date.now() + 48 * 60 * 60 * 1000)
     };
     
     setCustomerScans([newScan, ...customerScans]);
     setIsNewProjectModalOpen(false);
+    setScanCode(newScan.scanCode);
+    setCodeExpiry(newScan.codeExpiry);
+    setShowProjectSuccessScreen(true);
+    
     setNewProjectForm({
       customerName: '',
       customerId: `C${Math.floor(1000 + Math.random() * 9000)}`,
       roomType: 'Kitchen',
-      status: 'Pending Scan'
+      status: 'Ausstehender Scan',
+      email: '' // Add email field
     });
   };
   
-  // Add new handler after other handlers
+  const generateScanCode = () => {
+    const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Excluding similar looking characters
+    let result = '';
+    for (let i = 0; i < 4; i++) {
+      result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+  };
+  
+  // Update the handleSendToCustomer function
   const handleSendToCustomer = () => {
-    setShowSuccessScreen(true);
-    // Reset after 3 seconds and return to dashboard
-    setTimeout(() => {
-      setShowSuccessScreen(false);
-      setCurrentStep('dashboard');
-      setSelectedScan(null);
-    }, 3000);
+    // Update customer status
+    setCustomerScans(prevScans => 
+      prevScans.map(scan => 
+        scan.id === selectedScan?.id 
+          ? { ...scan, status: 'Angebot gesendet' }
+          : scan
+      )
+    );
+
+    setChatMessages([
+      {
+        id: 1,
+        sender: 'system',
+        message: 'Angebot gesendet',
+        timestamp: new Date(),
+      },
+      {
+        id: 2,
+        sender: 'sales',
+        message: `
+          <div class="quote-message">
+            <p>Sehr geehrte ${customerInfo.name},</p>
+            <p>ich habe Ihnen soeben ein Angebot zugesendet.</p>
+            <a href="/quote/${selectedScan?.id}" class="quote-link">
+              <div class="quote-preview">
+                <img src="/quote-preview.jpg" alt="Angebot Vorschau" class="quote-image" />
+                <div class="quote-details">
+                  <span class="quote-title">Angebot #${selectedScan?.id}</span>
+                  <span class="quote-price">${(quotationItems.reduce((sum, item) => sum + item.price, 0) * 1.19).toLocaleString()} €</span>
+                </div>
+              </div>
+            </a>
+            <p>Bitte schauen Sie sich das Angebot in Ruhe an. Bei Fragen stehe ich Ihnen gerne zur Verfügung.</p>
+            <p>Mit freundlichen Grüßen,<br/>Finn Stürenburg</p>
+          </div>
+        `,
+        timestamp: new Date(),
+        isHtml: true
+      }
+    ]);
+    setShowSentSuccessScreen(true);
   };
   
   return (
@@ -691,15 +804,15 @@ const SalesRepresentativeFlow = () => {
                     onChange={handleStatusFilter}
                   >
                     <option>All status</option>
-                    <option>Pending Scan</option>
-                    <option>Scan Completed</option>
-                    <option>Quote Sent</option>
+                    <option>Ausstehender Scan</option>
+                    <option>Scan abgeschlossen</option>
+                    <option>Angebot gesendet</option>
                   </select>
                   <button 
                     onClick={handleNewProject}
                     className="bg-blue-600 text-white px-4 py-2 rounded-md shadow-sm hover:bg-blue-700"
                   >
-                    + New Project
+                    + Neues Projekt
                   </button>
                 </div>
               </div>
@@ -738,9 +851,9 @@ const SalesRepresentativeFlow = () => {
                         </td>
                         <td className="w-1/6 px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            scan.status === 'Pending Scan' 
+                            scan.status === 'Ausstehender Scan' 
                               ? 'bg-yellow-100 text-yellow-800' 
-                              : scan.status === 'Scan Completed' 
+                              : scan.status === 'Scan abgeschlossen' 
                                 ? 'bg-green-100 text-green-800' 
                                 : 'bg-blue-100 text-blue-800'
                           }`}>
@@ -770,7 +883,7 @@ const SalesRepresentativeFlow = () => {
         )}
         
         {/* Pending Scan View */}
-        {currentStep === 'pending-scan' && selectedScan && (
+        {currentStep === 'ausstehender-scan' && selectedScan && (
           <div className="flex-1 p-6 overflow-auto">
             <div className="max-w-3xl mx-auto">
               <div className="mb-6 flex items-center">
@@ -789,17 +902,17 @@ const SalesRepresentativeFlow = () => {
                 <div className="mb-6">
                   <Camera className="w-16 h-16 text-blue-600 mx-auto mb-4" />
                   <h3 className="text-xl font-medium text-gray-900 mb-2">
-                    Room Scan Required
+                    Raumscan erforderlich
                   </h3>
                   <p className="text-gray-600 max-w-md mx-auto">
-                    To proceed with the design and quotation process, we need a 3D scan of the room. 
-                    Please ensure the customer completes the room scanning process.
+                    Um mit dem Entwurfs- und Angebot-Prozess fortzufahren, benötigen wir eine 3D-Raumscan des Raums. 
+                    Bitte stellen Sie sicher, dass der Kunde den Raumscan-Prozess abschließt.
                   </p>
                 </div>
 
                 <div className="mt-8">
                   <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                    Reach out to customer
+                    Kunden kontaktieren
                   </button>
                 </div>
               </div>
@@ -822,9 +935,9 @@ const SalesRepresentativeFlow = () => {
                   {selectedScan.customerName}'s {selectedScan.roomType}
                 </h2>
                 <span className={`px-2 py-1 text-xs leading-none font-medium rounded-full ${
-                  selectedScan.status === 'Pending Scan' 
+                  selectedScan.status === 'Ausstehender Scan' 
                     ? 'bg-yellow-100 text-yellow-800' 
-                    : selectedScan.status === 'Scan Completed' 
+                    : selectedScan.status === 'Scan abgeschlossen' 
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-blue-100 text-blue-800'
                 }`}>
@@ -836,7 +949,7 @@ const SalesRepresentativeFlow = () => {
                 onClick={handleAdvanceToProposal}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
-                Continue to Planning
+                Weiter zu Planung
               </button>
             </div>
             
@@ -882,7 +995,7 @@ const SalesRepresentativeFlow = () => {
                   </ThreeJSErrorBoundary>
                   
                   <div className="absolute bottom-4 right-4 bg-white rounded-md shadow-md p-2 text-xs text-gray-600">
-                    {viewMode === '3d' ? '3D View' : 'Top View'} | Room Dimensions: 400 × 300 cm
+                    {viewMode === '3d' ? '3D Ansicht' : 'Top Ansicht'} | Raumabmessungen: 400 × 300 cm
                   </div>
                 </div>
                 
@@ -894,7 +1007,7 @@ const SalesRepresentativeFlow = () => {
                       onChange={(e) => setNaturalLanguageQuery(e.target.value)}
                       ref={queryInputRef}
                       className="flex-1 px-4 py-2 border border-gray-300 rounded-l-md focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Ask a question about this space (e.g., 'Where is the power outlet?')"
+                      placeholder="Stellen Sie eine Frage zu diesem Raum (z.B., 'Wo ist der Stromanschluss?')"
                     />
                     <button 
                       type="submit"
@@ -918,27 +1031,27 @@ const SalesRepresentativeFlow = () => {
               {/* Room Information Sidebar */}
               <div className="w-80 border-l border-gray-200 bg-white flex flex-col">
                 <div className="p-4 border-b border-gray-200">
-                  <h3 className="font-medium text-gray-800">Room Analysis</h3>
+                  <h3 className="font-medium text-gray-800">Raumanalyse</h3>
                 </div>
                 
                 <div className="flex-1 overflow-y-auto">
                   <div className="p-4 border-b border-gray-200">
-                    <h4 className="text-sm font-medium text-gray-500 mb-3">Room Measurements</h4>
+                    <h4 className="text-sm font-medium text-gray-500 mb-3">Raumabmessungen</h4>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Room width:</span>
+                        <span className="text-gray-600">Raumbreite:</span>
                         <span className="font-medium text-gray-800">{measurements.roomDimensions?.width} cm</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Room depth:</span>
+                        <span className="text-gray-600">Raumtiefe:</span>
                         <span className="font-medium text-gray-800">{measurements.roomDimensions?.depth} cm</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Ceiling height:</span>
+                        <span className="text-gray-600">Decke Höhe:</span>
                         <span className="font-medium text-gray-800">{measurements.ceilingHeight} cm</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Floor type:</span>
+                        <span className="text-gray-600">Bodenart:</span>
                         <span className="font-medium text-gray-800">{measurements.floorType}</span>
                       </div>
                     </div>
@@ -946,13 +1059,13 @@ const SalesRepresentativeFlow = () => {
                   
                   <div className="p-4 border-b border-gray-200">
                     <div className="flex justify-between items-center mb-3">
-                      <h4 className="text-sm font-medium text-gray-500">Detected Objects</h4>
+                      <h4 className="text-sm font-medium text-gray-500">Erkannte Objekte</h4>
                       {selectedObjects.length > 0 && (
                         <button 
                           onClick={handleRemoveObjects}
                           className="text-xs text-red-600 hover:text-red-800 flex items-center"
                         >
-                          <Trash2 size={14} className="mr-1" /> Remove selected
+                          <Trash2 size={14} className="mr-1" /> Ausgewählte Objekte entfernen
                         </button>
                       )}
                     </div>
@@ -992,17 +1105,17 @@ const SalesRepresentativeFlow = () => {
                     <div className="space-y-3 text-sm">
                       <div className="p-3 bg-yellow-50 border border-yellow-100 rounded-md">
                         <p className="text-yellow-800">
-                          <strong>Plumbing access:</strong> Limited to north wall near existing sink.
+                          <strong>Wasserleitungszugang:</strong> Eingeschränkt auf die Nordwand nahe dem vorhandenen Sinken.
                         </p>
                       </div>
                       <div className="p-3 bg-yellow-50 border border-yellow-100 rounded-md">
                         <p className="text-yellow-800">
-                          <strong>Electrical outlets:</strong> Available on east and north walls only.
+                          <strong>Elektrische Steckdosen:</strong> Nur auf Ost- und Nordwand verfügbar.
                         </p>
                       </div>
                       <div className="p-3 bg-yellow-50 border border-yellow-100 rounded-md">
                         <p className="text-yellow-800">
-                          <strong>Window:</strong> North facing, consider natural light for workspaces.
+                          <strong>Fenster:</strong> Nordorientiert,考虑自然光线用于工作空间。
                         </p>
                       </div>
                     </div>
@@ -1084,7 +1197,7 @@ const SalesRepresentativeFlow = () => {
                   </ThreeJSErrorBoundary>
                   
                   <div className="absolute bottom-4 right-4 bg-white rounded-md shadow-md p-2 text-xs text-gray-600">
-                    {viewMode === '3d' ? '3D View' : 'Top View'} | Room Dimensions: 400 × 300 cm
+                    {viewMode === '3d' ? '3D Ansicht' : 'Top Ansicht'} | Raumabmessungen: 400 × 300 cm
                   </div>
                 </div>
                 
@@ -1120,7 +1233,7 @@ const SalesRepresentativeFlow = () => {
               {/* Product Catalog */}
               <div className="w-80 border-l border-gray-200 bg-white flex flex-col">
                 <div className="p-4 border-b border-gray-200">
-                  <h3 className="font-medium text-gray-800">Product Catalog</h3>
+                  <h3 className="font-medium text-gray-800">Produktkatalog</h3>
                   <div className="mt-2 flex flex-wrap gap-1">
                     {productCategories.map(category => (
                       <button
@@ -1396,7 +1509,7 @@ const SalesRepresentativeFlow = () => {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
           <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="flex justify-between items-center p-4 border-b">
-              <h3 className="text-lg font-medium text-gray-900">Create New Project</h3>
+              <h3 className="text-lg font-medium text-gray-900">Neues Projekt erstellen</h3>
               <button
                 onClick={() => setIsNewProjectModalOpen(false)}
                 className="text-gray-400 hover:text-gray-500"
@@ -1409,7 +1522,7 @@ const SalesRepresentativeFlow = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Customer Name
+                    Kundenname
                   </label>
                   <input
                     type="text"
@@ -1425,7 +1538,23 @@ const SalesRepresentativeFlow = () => {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Customer ID
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={newProjectForm.email}
+                    onChange={(e) => setNewProjectForm({
+                      ...newProjectForm,
+                      email: e.target.value
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Kunden-ID
                   </label>
                   <input
                     type="text"
@@ -1437,7 +1566,7 @@ const SalesRepresentativeFlow = () => {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Room Type
+                    Raumtyp
                   </label>
                   <select
                     value={newProjectForm.roomType}
@@ -1447,11 +1576,11 @@ const SalesRepresentativeFlow = () => {
                     })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option>Kitchen</option>
-                    <option>Living Room</option>
-                    <option>Bathroom</option>
-                    <option>Office</option>
-                    <option>Bedroom</option>
+                    <option>Küche</option>
+                    <option>Wohnzimmer</option>
+                    <option>Badezimmer</option>
+                    <option>Büro</option>
+                    <option>Schlafzimmer</option>
                   </select>
                 </div>
               </div>
@@ -1462,13 +1591,13 @@ const SalesRepresentativeFlow = () => {
                   onClick={() => setIsNewProjectModalOpen(false)}
                   className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
                 >
-                  Cancel
+                  Abbrechen
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 >
-                  Create Project
+                  Projekt erstellen
                 </button>
               </div>
             </form>
@@ -1477,20 +1606,309 @@ const SalesRepresentativeFlow = () => {
       )}
       
       {/* Success Screen */}
-      {showSuccessScreen && (
+      {showProjectSuccessScreen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4 text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Check className="h-8 w-8 text-green-600" />
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4">
+            <div className="text-center mb-4">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <Check className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-medium text-gray-900 mb-1">
+                Projekt erfolgreich erstellt
+              </h3>
+              <p className="text-gray-600">
+                Teilen Sie die folgenden Informationen mit Ihrem Kunden, um den Scan-Prozess zu starten.
+              </p>
             </div>
-            <h3 className="text-xl font-medium text-gray-900 mb-2">
-              Quotation Sent Successfully
-            </h3>
-            <p className="text-gray-600">
-              The quotation has been sent to {customerInfo.name}. They will be notified via email.
-            </p>
-            <div className="mt-4 text-sm text-gray-500">
-              Redirecting to dashboard...
+
+            {/* Scan Code Section */}
+            <div className="bg-blue-50 rounded-lg p-4 mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <div>
+                  <h4 className="text-lg font-medium text-gray-900">Raumscan-Code</h4>
+                  <p className="text-sm text-gray-600">Gültig für 48 Stunden</p>
+                </div>
+                <div className="text-3xl font-mono font-bold text-blue-600 tracking-wider">
+                  {scanCode}
+                </div>
+              </div>
+            </div>
+
+            {/* Message Template Section */}
+            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="text-lg font-medium text-gray-900">Mit Kunden teilen</h4>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-md p-3 mb-3">
+                <div className="flex items-start space-x-3 mb-3">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Camera className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h5 className="font-medium text-gray-900 mb-1">Raumscan-Anleitung</h5>
+                    <p className="text-sm text-gray-600">
+                      Scan-Code: <span className="font-mono font-bold text-blue-600">{scanCode}</span>
+                      <br />
+                      Scan-Link: <span className="text-blue-600">raumblick.com/scan/{scanCode}</span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-sm text-gray-600">
+                  <div className="flex items-start space-x-2">
+                    <div className="w-5 h-5 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs font-medium text-blue-600">1</span>
+                    </div>
+                    <p>Laden Sie unsere Scan-App aus dem App Store oder Play Store herunter</p>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <div className="w-5 h-5 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs font-medium text-blue-600">2</span>
+                    </div>
+                    <p>Geben Sie den Scan-Code ein oder verwenden Sie den obigen Link</p>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <div className="w-5 h-5 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs font-medium text-blue-600">3</span>
+                    </div>
+                    <p>Räumen Sie den Raum auf und sorgen Sie für gute Beleuchtung vor dem Scannen</p>
+                  </div>
+                </div>
+
+                <div className="mt-2 pt-2 border-t border-gray-100">
+                  <p className="text-xs text-gray-500">
+                    Der Scan-Vorgang dauert etwa 10-15 Minuten. Der Code läuft in 48 Stunden ab.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row justify-between space-y-2 sm:space-y-0 sm:space-x-2">
+                <button
+                  onClick={() => copyToClipboard(`Raumscan-Code: ${scanCode}\n\nLaden Sie unsere App herunter und geben Sie diesen Code ein, um mit dem Scannen Ihres Raums zu beginnen: raumblick.com/scan/${scanCode}`)}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-50 space-x-2"
+                >
+                  <Copy size={16} />
+                  <span className="text-sm">Nachricht kopieren</span>
+                </button>
+                <button
+                  onClick={() => copyToClipboard(`https://raumblick.com/scan/${scanCode}`)}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-50 space-x-2"
+                >
+                  <Link size={16} />
+                  <span className="text-sm">Link kopieren</span>
+                </button>
+                <button
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-50 space-x-2"
+                >
+                  <Mail size={16} />
+                  <span className="text-sm">E-Mail</span>
+                </button>
+                <button
+                  className="flex items-center justify-center px-3 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 space-x-2"
+                >
+                  <MessageCircle size={16} />
+                  <span className="text-sm">WhatsApp</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowProjectSuccessScreen(false)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Zurück zum Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add this new Success Screen with Chat */}
+      {showSentSuccessScreen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 h-[80vh] flex flex-col">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <Check className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-medium text-gray-900">
+                      Angebot erfolgreich gesendet
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Das Angebot wurde an {customerInfo.email} gesendet
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowSentSuccessScreen(false);
+                    setCurrentStep('dashboard');
+                  }}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 flex">
+              {/* Chat Section */}
+              <div className="flex-1 flex flex-col p-6 overflow-hidden"> {/* Added overflow-hidden */}
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-medium text-gray-600">
+                        {customerInfo.name.split(' ').map(n => n[0]).join('')}
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-medium text-gray-900">{customerInfo.name}</h4>
+                      <p className="text-xs text-gray-500">{customerInfo.email}</p>
+                    </div>
+                  </div>
+                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                    Online
+                  </span>
+                </div>
+
+                <div className="flex-1 bg-gray-50 rounded-lg p-4 overflow-y-auto min-h-0"> {/* Added min-h-0 */}
+                  <div className="space-y-4">
+                    {chatMessages.map((msg) => (
+                      <div
+                        key={msg.id}
+                        className={`flex ${
+                          msg.sender === 'system' 
+                            ? 'justify-center' 
+                            : msg.sender === 'sales' 
+                              ? 'justify-end' 
+                              : 'justify-start'
+                        }`}
+                      >
+                        {msg.sender === 'system' ? (
+                          <div className="bg-blue-50 text-blue-800 text-sm py-2 px-4 rounded-full">
+                            {msg.message}
+                          </div>
+                        ) : msg.sender === 'sales' ? (
+                          <div className="bg-blue-600 text-white p-4 rounded-lg shadow-sm max-w-[80%]">
+                            <div className="flex items-start">
+                              <div className="mr-3 w-full min-w-0">
+                                {msg.isHtml ? (
+                                  <div 
+                                    dangerouslySetInnerHTML={{ __html: msg.message }}
+                                    className="text-sm break-words [&_.quote-message]:space-y-3 [&_.quote-link]:block [&_.quote-link]:mt-4 [&_.quote-link]:mb-4 
+                                      [&_.quote-preview]:bg-blue-500 [&_.quote-preview]:rounded-lg [&_.quote-preview]:overflow-hidden 
+                                      [&_.quote-image]:w-full [&_.quote-image]:h-32 [&_.quote-image]:object-cover
+                                      [&_.quote-details]:p-3 [&_.quote-details]:flex [&_.quote-details]:flex-col [&_.quote-details]:gap-1
+                                      [&_.quote-title]:text-sm [&_.quote-title]:font-medium
+                                      [&_.quote-price]:text-sm [&_.quote-price]:font-bold
+                                      [&_p]:break-words [&_a]:break-words"
+                                  />
+                                ) : (
+                                  <p className="text-sm break-words">{msg.message}</p>
+                                )}
+                                <span className="text-xs text-blue-100 block mt-1">
+                                  {msg.timestamp.toLocaleTimeString()}
+                                </span>
+                              </div>
+                              <div className="flex-shrink-0">
+                                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                  <span className="text-sm font-medium text-white">SR</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm max-w-[80%]">
+                            <div className="flex items-start">
+                              <div className="flex-shrink-0">
+                                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                                  <span className="text-sm font-medium text-gray-600">
+                                    {customerInfo.name.split(' ').map(n => n[0]).join('')}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="ml-3 min-w-0">
+                                <p className="text-sm text-gray-900 break-words">{msg.message}</p>
+                                <span className="text-xs text-gray-500 block mt-1">
+                                  {msg.timestamp.toLocaleTimeString()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-4 flex-shrink-0"> {/* Added flex-shrink-0 */}
+                  <form className="flex space-x-2" onSubmit={(e) => {
+                    e.preventDefault();
+                    const input = e.target.elements.message;
+                    if (input.value.trim()) {
+                      setChatMessages([...chatMessages, {
+                        id: Date.now(),
+                        sender: 'sales',
+                        message: input.value,
+                        timestamp: new Date()
+                      }]);
+                      input.value = '';
+                    }
+                  }}>
+                    <input
+                      type="text"
+                      name="message"
+                      placeholder="Nachricht eingeben..."
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-l-md focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700 flex items-center"
+                    >
+                      <MessageSquare size={16} className="mr-2" />
+                      Senden
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              {/* Quotation Preview */}
+              <div className="w-96 border-l border-gray-200 p-6">
+                <h4 className="text-lg font-medium text-gray-900 mb-4">Angebot Übersicht</h4>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="space-y-4">
+                    <div>
+                      <span className="text-sm text-gray-500">Gesamtbetrag</span>
+                      <div className="text-2xl font-bold text-gray-900">
+                        {(quotationItems.reduce((sum, item) => sum + item.price, 0) * 1.19).toLocaleString()} €
+                      </div>
+                    </div>
+                    <div className="border-t border-gray-200 pt-4">
+                      <span className="text-sm text-gray-500">Status</span>
+                      <div className="flex items-center mt-1">
+                        <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
+                        <span className="text-sm font-medium text-gray-900">Warten auf Antwort</span>
+                      </div>
+                    </div>
+                    <div className="border-t border-gray-200 pt-4">
+                      <span className="text-sm text-gray-500">Produkte</span>
+                      <div className="mt-2 space-y-2">
+                        {quotationItems.map((item) => (
+                          <div key={item.id} className="text-sm text-gray-900">
+                            {item.name}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

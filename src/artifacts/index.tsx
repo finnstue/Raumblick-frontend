@@ -454,46 +454,17 @@ const CustomerScanningInterface = () => {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 text-blue-600 rounded-full mb-4">
             <Camera size={40} />
           </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Willkommen beim RaumBlick Scanner</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Hallo Leon Blumenthal</h1>
           <p className="text-gray-600 mb-6">
-            Scannen Sie Ihren Raum mit der Kamera oder laden Sie eine bestehende Aufnahme hoch,
-            um ein präzises 3D-Modell zu erstellen.
+            Bitte laden Sie eine Aufnahme von Ihrer Küche hoch, um ein präzises 3D Modell zu erstellen.
           </p>
         </div>
         
-        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-8 text-left">
-          <h2 className="text-sm font-medium text-gray-800 mb-2 flex items-center">
-            <Info size={16} className="text-blue-600 mr-2" />
-            Für beste Ergebnisse:
-          </h2>
-          <ul className="text-sm text-gray-600 space-y-2">
-            <li className="flex items-start">
-              <Circle size={8} className="text-blue-500 mr-2 mt-1.5" />
-              Stellen Sie sicher, dass der Raum gut beleuchtet ist
-            </li>
-            <li className="flex items-start">
-              <Circle size={8} className="text-blue-500 mr-2 mt-1.5" />
-              Bewegen Sie sich langsam durch den Raum und erfassen Sie alle Bereiche
-            </li>
-            <li className="flex items-start">
-              <Circle size={8} className="text-blue-500 mr-2 mt-1.5" />
-              Achten Sie besonders auf Ecken, Kanten und wichtige Objekte
-            </li>
-          </ul>
-        </div>
-        
-        <div className="space-y-3">
-          <button 
-            className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center"
-            onClick={() => setScanStep('scanning')}
-          >
-            Neuen Scan starten
-            <Camera size={18} className="ml-2" />
-          </button>
-          
-          <label 
-            className="w-full py-3 bg-white border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition flex items-center justify-center cursor-pointer"
-          >
+        {/* Upload area with drag & drop */}
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 mb-8 hover:border-blue-500 transition-colors cursor-pointer">
+          <label className="w-full h-full flex flex-col items-center cursor-pointer">
+            <ArrowUp size={32} className="text-gray-400 mb-4" />
+            <span className="text-gray-600">Datei hier per Drag & Drop ablegen</span>
             <input
               type="file"
               accept="video/*,.scan"
@@ -501,7 +472,6 @@ const CustomerScanningInterface = () => {
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
-                  // Set scan as complete and move to review
                   setScanComplete(true);
                   setAreasCovered({
                     walls: 100,
@@ -513,7 +483,6 @@ const CustomerScanningInterface = () => {
                   setCapturedFrames(80);
                   setScanStep('review');
                   
-                  // Start processing animation
                   setProcessingProgress(0);
                   setProcessingStatus('Verarbeite hochgeladene Aufnahme...');
                   
@@ -545,170 +514,42 @@ const CustomerScanningInterface = () => {
                 }
               }}
             />
-            Aufnahme hochladen
-            <ArrowUp size={18} className="ml-2" />
           </label>
-          
-          <button 
-            className="w-full py-3 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition flex items-center justify-center"
-            onClick={skipToReview}
-          >
-            Scan überspringen (Demo)
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-  
-  const renderScanningScreen = () => (
-    <div className="flex flex-col h-full bg-gray-100 relative">
-      {/* Camera view */}
-      <div className="flex-1 relative">
-        {/* Mock camera view for demo - using image instead of actual camera */}
-        <div className="absolute w-full h-full bg-gray-800 flex items-center justify-center">
-          {/* Fallback placeholder image mimicking a camera view */}
-          <img 
-            src="/api/placeholder/800/600" 
-            alt="Camera view" 
-            className="w-full h-full object-cover"
-          />
-          <video 
-            ref={videoRef}
-            className="absolute w-full h-full object-cover"
-            autoPlay
-            playsInline
-          />
         </div>
         
-        {/* Scanning feedback UI */}
-        <div className="absolute inset-0 pointer-events-none">
-          {/* Scanning grid overlay */}
-          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <defs>
-              <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="0.5" />
-              </pattern>
-            </defs>
-            <rect width="100" height="100" fill="url(#grid)" />
-          </svg>
-          
-          {/* Focus areas that need scanning */}
-          {!scanComplete && areasNeeded.some(area => areasCovered[area] < 100) && (
-            <div className={`absolute ${getNextAreaToScan() === 'walls' ? 'border-2 border-yellow-400 inset-16' : 
-              getNextAreaToScan() === 'corners' ? 'top-10 left-10 w-20 h-20 border-2 border-yellow-400' :
-              getNextAreaToScan() === 'floor' ? 'bottom-0 inset-x-0 h-24 border-t-2 border-yellow-400' :
-              'top-0 inset-x-0 h-24 border-b-2 border-yellow-400'}`}>
-            </div>
-          )}
+        {/* Tips section */}
+        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-8 text-left">
+          <h2 className="text-sm font-medium text-gray-800 mb-2 flex items-center">
+            <Info size={16} className="text-blue-600 mr-2" />
+            Für die besten Ergebnisse:
+          </h2>
+          <ul className="text-sm text-gray-600 space-y-2">
+            <li className="flex items-start">
+              <Circle size={8} className="text-blue-500 mr-2 mt-1.5" />
+              Stellen Sie sicher, dass die Aufnahme gut beleuchtet ist
+            </li>
+            <li className="flex items-start">
+              <Circle size={8} className="text-blue-500 mr-2 mt-1.5" />
+              Erfassen Sie den Raum aus mehreren Blickwinkeln
+            </li>
+            <li className="flex items-start">
+              <Circle size={8} className="text-blue-500 mr-2 mt-1.5" />
+              Achten Sie besonders auf Ecken und Kanten
+            </li>
+            <li className="flex items-start">
+              <Circle size={8} className="text-blue-500 mr-2 mt-1.5" />
+              Die Aufnahme sollte mindestens 1 Minute lang sein
+            </li>
+          </ul>
         </div>
         
-        {/* Instructions overlay */}
-        {showInstructions && (
-          <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/80 to-transparent p-4 text-white">
-            <div className="flex items-start mb-2">
-              <div className="mr-2 mt-1">
-                <Info size={20} />
-              </div>
-              <div>
-                <h3 className="font-medium mb-1">
-                  {scanComplete ? "Scan abgeschlossen!" : `Scannen Sie den ${getNextAreaToScanName()}`}
-                </h3>
-                <p className="text-sm text-gray-300">
-                  {scanComplete ? 
-                    "Sie können jetzt das 3D-Modell überprüfen." : 
-                    getNextAreaToScan() === 'walls' ? "Bewegen Sie sich langsam, um alle Wände zu erfassen" :
-                    getNextAreaToScan() === 'corners' ? "Erfassen Sie alle Ecken des Raumes" :
-                    getNextAreaToScan() === 'floor' ? "Richten Sie die Kamera auf den Boden" :
-                    "Richten Sie die Kamera zur Decke"
-                  }
-                </p>
-              </div>
-            </div>
-            <button 
-              className="text-xs text-gray-400 underline"
-              onClick={() => setShowInstructions(false)}
-            >
-              Ausblenden
-            </button>
-          </div>
-        )}
-        
-        {/* Capture indicator */}
-        <div className="absolute top-4 right-4 bg-black/50 rounded-full px-3 py-1 text-white text-xs flex items-center">
-          <Camera size={14} className="mr-1" />
-          {capturedFrames} Frames
-        </div>
-      </div>
-      
-      {/* Controls and progress */}
-      <div className="bg-white p-4">
-        <div className="mb-4">
-          <div className="flex justify-between text-sm mb-1">
-            <span className="font-medium text-gray-800">Scan-Fortschritt</span>
-            <span className="text-gray-600">{Math.round(scanProgress)}%</span>
-          </div>
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-blue-600 transition-all duration-300"
-              style={{ width: `${scanProgress}%` }}
-            ></div>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          {Object.entries(areasCovered).map(([area, coverage]) => (
-            <div key={area} className="flex items-center">
-              <div className="w-2 h-2 rounded-full mr-2" style={{ 
-                backgroundColor: coverage >= 100 ? '#10b981' : coverage > 50 ? '#fbbf24' : '#ef4444' 
-              }}></div>
-              <div className="flex-1">
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-600">
-                    {area === 'walls' ? 'Wände' : 
-                     area === 'corners' ? 'Ecken' : 
-                     area === 'floor' ? 'Boden' : 'Decke'}
-                  </span>
-                  <span className="text-gray-600">{Math.round(coverage)}%</span>
-                </div>
-                <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full transition-all duration-300"
-                    style={{ 
-                      width: `${coverage}%`,
-                      backgroundColor: coverage >= 100 ? '#10b981' : coverage > 50 ? '#fbbf24' : '#ef4444'
-                    }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        <div className="flex space-x-3">
-          <button 
-            className="flex-1 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition flex items-center justify-center"
-            onClick={() => setScanStep('start')}
-          >
-            Abbrechen
-          </button>
-          {scanComplete ? (
-            <button 
-              className="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center"
-              onClick={() => setScanStep('review')}
-            >
-              Modell ansehen
-              <ChevronRight size={18} className="ml-1" />
-            </button>
-          ) : (
-            <button 
-              className="flex-1 py-3 bg-gray-100 text-gray-400 rounded-lg flex items-center justify-center cursor-not-allowed"
-              disabled
-            >
-              Modell ansehen
-              <ChevronRight size={18} className="ml-1" />
-            </button>
-          )}
-        </div>
+        {/* Demo button */}
+        <button 
+          className="w-full py-3 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition flex items-center justify-center"
+          onClick={skipToReview}
+        >
+          Demo anzeigen
+        </button>
       </div>
     </div>
   );
@@ -976,22 +817,19 @@ const CustomerScanningInterface = () => {
           
           {scanStep !== 'start' && scanStep !== 'thankYou' && (
             <div className="flex items-center text-sm text-gray-600">
-              <span className="font-medium">Raum scannen</span>
+              <span className="font-medium">3D-Modell erstellen</span>
               <span className="mx-2">•</span>
               <span>
-                {scanStep === 'scanning' ? 'Schritt 1 von 3' : 
-                 scanStep === 'review' ? 'Schritt 2 von 3' : 
-                 'Schritt 3 von 3'}
+                {scanStep === 'review' ? 'Schritt 1 von 2' : 'Schritt 2 von 2'}
               </span>
             </div>
           )}
         </div>
       </header>
       
-      {/* Main content - shows different screens based on step */}
+      {/* Main content */}
       <main className="flex-1 overflow-hidden">
         {scanStep === 'start' && renderStartScreen()}
-        {scanStep === 'scanning' && renderScanningScreen()}
         {scanStep === 'review' && renderReviewScreen()}
         {scanStep === 'submit' && renderSubmitScreen()}
         {scanStep === 'thankYou' && renderThankYouScreen()}
