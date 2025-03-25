@@ -40,8 +40,8 @@ const SalesRepresentativeFlow = () => {
   const [quotationItems, setQuotationItems] = useState([]);
   const [renderQuality, setRenderQuality] = useState('preview');
   const [customerInfo, setCustomerInfo] = useState({
-    name: "Max Mustermann",
-    email: "max.mustermann@example.com",
+    name: "Leon Blumenthal",
+    email: "Leon@mail.de",
     address: "Beispielweg 42, 10115 Berlin"
   });
   
@@ -85,8 +85,8 @@ const SalesRepresentativeFlow = () => {
     const sampleScans = [
       { 
         id: 1, 
-        customerId: 'C1001', 
-        customerName: 'Max Mustermann', 
+        customerId: 'C5317', 
+        customerName: 'Leon Blumenthal', 
         scanDate: '2025-03-20', 
         roomType: 'Küche', 
         status: 'Scan abgeschlossen',
@@ -243,7 +243,7 @@ const SalesRepresentativeFlow = () => {
   // Add this new helper function after the state declarations
   const hasScanData = (scan) => {
     console.log('Checking scan data for:', scan.customerName);
-    const hasData = scan.customerName === 'Max Mustermann';
+    const hasData = scan.customerName === 'Leon Blumenthal';
     console.log('Has scan data:', hasData);
     return hasData;
   };
@@ -258,7 +258,7 @@ const SalesRepresentativeFlow = () => {
       name: scan.customerName,
       email: scan.customerId === 'C1004' ? 'anna.mueller@example.com' : 
             scan.customerId === 'C1002' ? 'laura.schmidt@example.com' : 
-            scan.customerId.startsWith('C1001') ? 'max.mustermann@example.com' : 
+            scan.customerId.startsWith('C5317') ? 'Leon@mail.de' : 
             `${scan.customerName.toLowerCase().replace(' ', '.')}@example.com`,
       address: scan.customerId === 'C1004' ? "Leopoldstraße 87, 80802 München" : 
               scan.customerId === 'C1002' ? "Gartenstraße 15, 80539 München" : 
@@ -386,7 +386,7 @@ const SalesRepresentativeFlow = () => {
           sender: 'sales',
           message: `
             <div class="quote-message">
-              <p>Sehr geehrte${scan.customerName === "Max Mustermann" ? "r" : ""} ${scan.customerName},</p>
+              <p>Sehr geehrte${scan.customerName === "Leon Blumenthal" ? "r" : ""} ${scan.customerName},</p>
               <p>ich habe Ihnen soeben ein Angebot zugesendet.</p>
               <a href="/quote/${scan.id}" class="quote-link">
                 <div class="quote-preview">
@@ -534,7 +534,7 @@ const SalesRepresentativeFlow = () => {
         sender: 'sales',
         message: `
           <div class="quote-message">
-            <p>Sehr geehrte${customerInfo.name === "Max Mustermann" ? "r" : ""} ${customerInfo.name},</p>
+            <p>Sehr geehrte${customerInfo.name === "Leon Blumenthal" ? "r" : ""} ${customerInfo.name},</p>
             <p>ich habe Ihnen soeben ein Angebot zugesendet.</p>
             <a href="/quote/${selectedScan?.id}" class="quote-link">
               <div class="quote-preview">
@@ -775,21 +775,21 @@ const SalesRepresentativeFlow = () => {
                 
                 <div className="flex-1 relative bg-gray-100" style={{ maxHeight: '600px' }}>
                 <SpatialView
-                    meshPath='mesh_aligned.ply'
+                    meshPath='mesh.ply'
                     notes_={[
-                      {
-                        id: 1,
-                        text: 'test',
-                        position: [0, 0, 0],
-                        isOpen: false,
-                      },
+                      // {
+                      //   id: 1,
+                      //   text: 'test',
+                      //   position: [0, 0, 0],
+                      //   isOpen: false,
+                      // },
                     ]}
                     measurements_={[
-                      {
-                        start: new THREE.Vector3(0, 0, 0),
-                        end: new THREE.Vector3(1, 1, 1),
-                        distance: 1,
-                      },
+                      // {
+                      //   start: new THREE.Vector3(0, 0, 0),
+                      //   end: new THREE.Vector3(1, 1, 1),
+                      //   distance: 1,
+                      // },
                     ]}
                   />
                   
