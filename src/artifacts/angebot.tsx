@@ -8,6 +8,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   X,
+  Refrigerator,
 } from 'lucide-react';
 import { SpatialView } from './spatial-view';
 import * as THREE from 'three';
@@ -27,7 +28,7 @@ interface CustomerQuoteProps {
 }
 
 const CustomerQuote: React.FC<CustomerQuoteProps> = ({
-  quoteId = 'Q2024-001',
+  quoteId = 'Q2025-001',
 }) => {
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
@@ -39,53 +40,34 @@ const CustomerQuote: React.FC<CustomerQuoteProps> = ({
   // Sample quote data - in a real app, this would be fetched based on the quoteId
   const quoteData = {
     provider: {
-      name: 'RaumBlick Solutions GmbH',
+      name: 'Küchen 123 GmbH',
       address: 'Musterstraße 123',
       city: '80333 München',
-      email: 'contact@raumblick.de',
+      email: 'contact@kuenchen123.de',
       logo: '/raumblick-logo.png',
     },
     customer: {
-      name: 'Max Mustermann',
-      address: 'Beispielweg 42',
-      city: '10115 Berlin',
-      email: 'max.mustermann@example.com',
+      name: 'Leon Blumenthal',
+      address: 'Musterstraße 123',
+      city: '80333 München',
+      email: 'Leon@mail.de',
     },
     quote: {
       number: quoteId,
-      date: '2024-03-21',
-      validUntil: '2024-04-20',
+      date: '2025-03-21',
+      validUntil: '2025-04-20',
       status: 'Aktiv',
       items: [
         {
           id: 1,
-          name: 'Modern Kitchen Counter',
+          name: 'Refrigerator',
+          price: 599,
           category: 'Kitchen Furniture',
-          price: 1299,
-          quantity: 1,
-          color: 'White',
-          material: 'Laminate',
-          dimensions: '240x60x90cm',
-        },
-        {
-          id: 2,
-          name: 'Cabinet Set (3 units)',
-          price: 899,
-          quantity: 1,
-          color: 'Oak',
-          material: 'Wood',
-          dimensions: '180x35x70cm',
-          category: 'Kitchen Furniture',
-        },
-        {
-          id: 3,
-          name: 'Built-in Refrigerator',
-          price: 1499,
-          quantity: 1,
           color: 'Silver',
           material: 'Stainless Steel',
-          dimensions: '70x65x180cm',
-          category: 'Appliances',
+          dimensions: '230x60x55cm',
+          icon: Refrigerator,
+          quantity: 1,
         },
       ] as QuoteItem[],
     },
@@ -114,6 +96,26 @@ const CustomerQuote: React.FC<CustomerQuoteProps> = ({
     setChangesSubmitted(true);
     setTimeout(() => setChangesSubmitted(false), 5000);
   };
+
+
+  const [notes, setNotes] = useState([
+    {
+      id: 1,
+      text: 'Vorschlag: Die können wir auch noch austauschen.',
+      position: [
+        0.06452879426613682,
+        0.3768842535273558,
+        0.6124792833409634
+    ],
+      isOpen: false,
+    },
+    // {
+    //   id: 2,
+    //   text: 'test',
+    //   position: [1, 0, 0],
+    //   isOpen: false,
+    // },
+  ]);
 
   return (
     <div className='min-h-screen bg-gray-50 py-8'>
@@ -217,9 +219,36 @@ const CustomerQuote: React.FC<CustomerQuoteProps> = ({
                 <div className='w-full h-full flex items-center justify-center'>
                   <SpatialView
                     meshPath='mesh.ply'
-                    notes_={[]}
+                    notes={notes}
+                    setNotes={setNotes}
                     measurements_={[]}
-                    boxes={[]}
+                    boxes={[{
+                      position: [
+                        1.2580810296793057, 0.5408218471088544, 0.6405583210829071,
+                      ],
+                      size: [0.6442045286487451, 0.3718225229390045, 0.8326004913815241],
+                      color: 'brown',
+                    },
+                    {
+                      position: [
+                        0.06383434706404639, 0.5566495684807564, 0.6506974786150543,
+                      ],
+                      size: [0.598527144051044, 0.38106302647714246, 0.806982028362666],
+                      color: 'brown',
+                    },
+                    {
+                      "position": [
+                          -0.4975438576492394,
+                          0.4479938625565003,
+                          -0.09743544053465603
+                      ],
+                      "size": [
+                          0.5571349074471671,
+                          0.5945329424895074,
+                          2.302829477885421
+                      ],
+                      "color": "black"
+                  }]}
                     setBoxes={undefined}
                   />
                 </div>

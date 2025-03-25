@@ -144,6 +144,8 @@ export function SpatialView({ meshPath, notes, setNotes, measurements_, boxes, s
   const onClick = (e) => {
     if (e.delta > 3) return;
 
+    console.log([e.point.x, e.point.y, e.point.z]);
+
     if (isMeasuring) {
       setEndPosition(e.point);
       setIsMeasuring(false);
