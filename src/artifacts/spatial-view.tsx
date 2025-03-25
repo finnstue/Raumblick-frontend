@@ -14,10 +14,18 @@ import { div, PLYLoader } from 'three/examples/jsm/Addons.js';
 import { useState, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
-function Mesh({ path, onClick, onPointerMove }) {
+function Mesh({ path, onClick, onPointerMove, fast = false }) {
   const obj = useLoader(PLYLoader, path);
 
   obj.center();
+
+  if (fast) {
+    return (
+      <mesh geometry={obj} onClick={onClick} onPointerMove={onPointerMove}>
+        <meshBasicMaterial vertexColors={true} />
+      </mesh>
+    );
+  }
 
   return (
     <Bvh firstHitOnly>
@@ -125,7 +133,7 @@ function Note({ position, text, isOpen, onChange, onToggle, onDelete }) {
   );
 }
 
-export function SpatialView({ meshPath,notes_, measurements_ }) {
+export function SpatialView({ meshPath, notes_, measurements_ }) {
   const [notes, setNotes] = useState(notes_);
 
   const [isMeasuring, setIsMeasuring] = useState(false);
@@ -196,6 +204,7 @@ export function SpatialView({ meshPath,notes_, measurements_ }) {
         path={meshPath}
         onClick={onClick}
         onPointerMove={isMeasuring ? handlePointerMove : null}
+        fast={true}
       />
       {notes.map((note) => (
         <Note

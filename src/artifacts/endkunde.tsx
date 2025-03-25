@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Camera, Check, ChevronRight, Circle, Grid, Info, RotateCw, Send, X, Layers, ArrowUp } from 'lucide-react';
 import * as THREE from 'three';
+import { SpatialView } from './spatial-view';
 
 const CustomerScanningInterface = () => {
   const [scanStep, setScanStep] = useState('start'); // start, scanning, review, submit
@@ -385,52 +386,6 @@ const CustomerScanningInterface = () => {
     }
   }, [scanStep, modelGenerated, rotationSpeed, viewMode]);
   
-  // Skip to review function
-  const skipToReview = () => {
-    setScanComplete(true);
-    setAreasCovered({
-      walls: 100,
-      corners: 100, 
-      floor: 100,
-      ceiling: 100
-    });
-    setScanProgress(100);
-    setCapturedFrames(80);
-    setScanStep('review');
-    
-    // Reset processing progress and status at the start
-    setProcessingProgress(0);
-    setProcessingStatus('Starte KI-Analyse...');
-    
-    const processingSteps = [
-      'Bilder werden ausgewertet...',
-      'Erstelle Punktwolke...',
-      'Objekte werden erkannt...',
-      'Semantisches Modell wird erstellt...',
-      'Raumverständnis wird generiert...',
-      'Analysiere Raumgeometrie...',
-      'Erstelle 3D-Modell...',
-      'Optimiere für Rendering...',
-      'Füge Texturdetails hinzu...',
-      'Fertigstellung...'
-    ];
-    
-    let progress = 0;
-    const interval = setInterval(() => {
-      if (progress < 100) {
-        // Update status message based on current progress
-        const stepIndex = Math.floor((progress / 100) * processingSteps.length);
-        setProcessingStatus(processingSteps[Math.min(stepIndex, processingSteps.length - 1)]);
-        
-        // Increment progress by 1%
-        progress += 1;
-        setProcessingProgress(progress);
-      } else {
-        clearInterval(interval);
-        setModelGenerated(true);
-      }
-    }, 120); // Adjusted interval for smoother animation (60ms = ~1 second for full progress)
-  };
   
   // Toggle rotation on/off with fixed speed
   const toggleRotation = () => {
@@ -504,7 +459,7 @@ const CustomerScanningInterface = () => {
                     if (progress < 100) {
                       const stepIndex = Math.floor((progress / 100) * processingSteps.length);
                       setProcessingStatus(processingSteps[Math.min(stepIndex, processingSteps.length - 1)]);
-                      progress += 1;
+                      progress += 5;
                       setProcessingProgress(progress);
                     } else {
                       clearInterval(interval);
@@ -621,64 +576,22 @@ const CustomerScanningInterface = () => {
         ) : (
           <div className="h-full flex flex-col p-4">
             <div className="bg-white rounded-lg shadow-sm overflow-hidden flex-1 relative">
-              {/* Three.js container */}
-              <div 
-                ref={threeJsContainerRef} 
-                className="w-full h-full"
-              ></div>
+              <SpatialView
+                meshPath='mesh.ply'
+                notes_={[
+                ]}
+                measurements_={[
+                ]}
+              />
               
-              <div className="absolute bottom-4 right-4 flex space-x-2">
-                <button 
-                  className="p-2 bg-white rounded-full shadow-md text-gray-600 hover:text-blue-600 flex items-center justify-center"
-                  onClick={toggleRotation}
-                  title="Auto-Rotation ein/ausschalten"
-                >
-                  <Rotate3D />
-                </button>
-                <button 
-                  className="p-2 bg-white rounded-full shadow-md text-gray-600 hover:text-blue-600 flex items-center justify-center"
-                  onClick={() => setViewMode(viewMode === '3d' ? 'top' : '3d')}
-                  title={viewMode === '3d' ? 'Zur Draufsicht wechseln' : 'Zur 3D-Ansicht wechseln'}
-                >
-                  <Grid />
-                </button>
-              </div>
             </div>
             
-            <div className="mt-4 bg-white rounded-lg shadow-sm p-4">
-              <h3 className="text-sm font-medium text-gray-800 mb-3">Erkannte Elemente:</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center text-sm text-gray-600">
-                  <Check size={16} className="text-green-500 mr-2" />
-                  1 Fenster
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <Check size={16} className="text-green-500 mr-2" />
-                  4 Wände
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <Check size={16} className="text-green-500 mr-2" />
-                  1 Tisch
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <Check size={16} className="text-green-500 mr-2" />
-                  2 Steckdosen
-                </div>
-              </div>
-            </div>
           </div>
         )}
       </div>
       
       <div className="bg-white p-4 border-t border-gray-200">
         <div className="flex space-x-3">
-          <button 
-            className="flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
-            onClick={() => setScanStep('scanning')}
-          >
-            <ArrowLeft size={18} className="mr-1" />
-            Zurück
-          </button>
           
           <button 
             className="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center"
@@ -716,23 +629,10 @@ const CustomerScanningInterface = () => {
           </p>
           
           <div className="p-4 bg-gray-50 rounded-lg mb-6 text-left">
-            <h3 className="text-sm font-medium text-gray-800 mb-3">Scan-Details:</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">Raumgröße:</span>
-                <span className="text-gray-800">18.3 m²</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Deckenhöhe:</span>
-                <span className="text-gray-800">2.4 m</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Erkannte Objekte:</span>
-                <span className="text-gray-800">7</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Scangüte:</span>
-                <span className="text-gray-800">Hoch</span>
+              <h3 className="text-sm font-medium text-gray-800 mb-3" style={{marginBottom: '0px'}}>Scan-Qualität:</h3>
+                <span className="text-gray-800">Sehr Hoch</span>
               </div>
             </div>
           </div>
@@ -768,7 +668,7 @@ const CustomerScanningInterface = () => {
               <Info size={20} className="text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-gray-600">
                 Ihr Dienstleister kann jetzt mit diesem 3D-Modell arbeiten, um Ihnen ein detailliertes Angebot zu erstellen.
-                Sie sparen damit Zeit und erhalten präzisere Ergebnisse!
+                Sie sparen damit Zeit!
               </p>
             </div>
           </div>
