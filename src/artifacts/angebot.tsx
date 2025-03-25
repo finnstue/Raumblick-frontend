@@ -217,21 +217,10 @@ const CustomerQuote: React.FC<CustomerQuoteProps> = ({
                 <div className='w-full h-full flex items-center justify-center'>
                   <SpatialView
                     meshPath='mesh.ply'
-                    notes_={[
-                      {
-                        id: 1,
-                        text: 'test',
-                        position: [0, 0, 0],
-                        isOpen: false,
-                      },
-                    ]}
-                    measurements_={[
-                      {
-                        start: new THREE.Vector3(0, 0, 0),
-                        end: new THREE.Vector3(1, 1, 1),
-                        distance: 1,
-                      },
-                    ]}
+                    notes_={[]}
+                    measurements_={[]}
+                    boxes={[]}
+                    setBoxes={undefined}
                   />
                 </div>
               </div>

@@ -39,7 +39,7 @@ function Mesh({ path, onClick, onPointerMove, fast = false }) {
 
 function CustomCanvas({
   children,
-  initialPosition = [0, -2, 2],
+  initialPosition = [-1, -2, 0.5],
   farPlane = 100,
   fov = 75,
 }) {
@@ -93,7 +93,7 @@ function Note({ position, text, isOpen, onChange, onToggle, onDelete }) {
         <div className='relative'>
           <textarea
             style={{
-              width: '8em',
+              width: '10em',
               height: '6em',
               resize: 'none',
               padding: '8px',
@@ -118,7 +118,7 @@ function Note({ position, text, isOpen, onChange, onToggle, onDelete }) {
           className='bg-yellow-200 cursor-pointer font-bold'
           style={{
             height: '20px',
-            maxWidth: '4em',
+            maxWidth: '6em',
             overflow: 'hidden',
             lineHeight: '16px',
             fontSize: '12px',
@@ -134,14 +134,11 @@ function Note({ position, text, isOpen, onChange, onToggle, onDelete }) {
   );
 }
 
-export function SpatialView({ meshPath, notes_, measurements_, boxes_=[] }) {
-  const [notes, setNotes] = useState(notes_);
-
+export function SpatialView({ meshPath, notes, setNotes, measurements_, boxes, setBoxes }) {
   const [isMeasuring, setIsMeasuring] = useState(false);
   const [startPosition, setStartPosition] = useState(null);
   const [endPosition, setEndPosition] = useState(null);
   const [fixedMeasurements, setFixedMeasurements] = useState(measurements_);
-  const [boxes, setBoxes] = useState(boxes_);
   const [boxStartPosition, setBoxStartPosition] = useState(null);
 
   const onClick = (e) => {
@@ -194,7 +191,7 @@ export function SpatialView({ meshPath, notes_, measurements_, boxes_=[] }) {
             yMin + height / 2,
             zMin + depth / 2
           ];
-          const padding = 0.02;
+          const padding = 0;
           const newBoxes = [
             ...boxes,
             {
@@ -239,7 +236,7 @@ export function SpatialView({ meshPath, notes_, measurements_, boxes_=[] }) {
         path={meshPath}
         onClick={onClick}
         onPointerMove={isMeasuring ? handlePointerMove : null}
-        fast={true}
+        fast={false}
       />
       {notes.map((note) => (
         <Note
@@ -282,7 +279,7 @@ export function SpatialView({ meshPath, notes_, measurements_, boxes_=[] }) {
               borderRadius: '4px',
             }}
           >
-            {Math.round(startPosition.distanceTo(endPosition) * 100) / 100}m
+            {Math.round(startPosition.distanceTo(endPosition) * 100)}cm
           </div>
         </Html>
       )}
@@ -306,9 +303,8 @@ export function SpatialView({ meshPath, notes_, measurements_, boxes_=[] }) {
                 );
               }}
             >
-              {Math.round(measurement.start.distanceTo(measurement.end) * 100) /
-                100}
-              m
+              {Math.round(measurement.start.distanceTo(measurement.end) * 100)}
+              cm
             </div>
           </Html>
           <Line
