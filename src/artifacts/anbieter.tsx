@@ -826,37 +826,6 @@ const SalesRepresentativeFlow = () => {
                 </div>
               </div>
               
-              {/* Room Information Sidebar */}
-              <div className="w-80 border-l border-gray-200 bg-white flex flex-col">
-                <div className="p-4 border-b border-gray-200" style={{height: '53px'}}>
-                  <h3 className="font-medium text-gray-800">Raumanalyse</h3>
-                </div>
-                
-                <div className="flex-1 overflow-y-auto">
-                  <div className="p-4 border-b border-gray-200">
-                    <h4 className="text-sm font-medium text-gray-500 mb-3">TODO</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">TODO</span>
-                        <span className="font-medium text-gray-800"> todo</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  
-                  
-                  <div className="p-4">
-                    <h4 className="text-sm font-medium text-gray-500 mb-3">TODO</h4>
-                    <div className="space-y-3 text-sm">
-                      <div className="p-3 bg-yellow-50 border border-yellow-100 rounded-md">
-                        <p className="text-yellow-800">
-                          TODO
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         )}
