@@ -625,7 +625,6 @@ const SalesRepresentativeFlow = () => {
                       <th className="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
                       <th className="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scan Date</th>
                       <th className="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="w-1/6 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preview</th>
                       <th className="w-1/6 px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                     </tr>
                   </thead>
@@ -660,12 +659,7 @@ const SalesRepresentativeFlow = () => {
                             {scan.status}
                           </span>
                         </td>
-                        <td className="w-1/6 px-6 py-4 whitespace-nowrap">
-                          <div className="h-12 w-16 bg-gray-100 rounded flex items-center justify-center text-gray-500">
-                            <Home className="h-6 w-6" />
-                          </div>
-                        </td>
-                        <td className="w-1/6 px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td className="w-1/6 px-6 py-4 whitespace-nowrap text-right text-md font-medium">
                           <button 
                             className="text-blue-600 hover:text-blue-900"
                             onClick={() => handleSelectScan(scan)}
@@ -781,7 +775,7 @@ const SalesRepresentativeFlow = () => {
                 
                 <div className="flex-1 relative bg-gray-100" style={{ maxHeight: '600px' }}>
                 <SpatialView
-                    meshPath='mesh.ply'
+                    meshPath='mesh_aligned.ply'
                     notes_={[
                       {
                         id: 1,
