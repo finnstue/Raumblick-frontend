@@ -9,6 +9,7 @@ import {
   Html,
   Splat,
   Line,
+  Edges,
 } from '@react-three/drei';
 import { div, PLYLoader } from 'three/examples/jsm/Addons.js';
 import { useState, useMemo, useRef } from 'react';
@@ -133,13 +134,15 @@ function Note({ position, text, isOpen, onChange, onToggle, onDelete }) {
   );
 }
 
-export function SpatialView({ meshPath, notes_, measurements_ }) {
+export function SpatialView({ meshPath, notes_, measurements_, boxes_=[] }) {
   const [notes, setNotes] = useState(notes_);
 
   const [isMeasuring, setIsMeasuring] = useState(false);
   const [startPosition, setStartPosition] = useState(null);
   const [endPosition, setEndPosition] = useState(null);
   const [fixedMeasurements, setFixedMeasurements] = useState(measurements_);
+  const [boxes, setBoxes] = useState(boxes_);
+  const [boxStartPosition, setBoxStartPosition] = useState(null);
 
   const onClick = (e) => {
     if (e.delta > 3) return;
@@ -172,7 +175,39 @@ export function SpatialView({ meshPath, notes_, measurements_ }) {
     } else if (e.shiftKey) {
       setStartPosition(e.point);
       setIsMeasuring(true);
-    }
+    } else if (e.altKey) {
+        if (boxStartPosition === null) {
+          setBoxStartPosition(e.point);
+        } else {
+
+          const xMin = Math.min(boxStartPosition.x, e.point.x);
+          const xMax = Math.max(boxStartPosition.x, e.point.x);
+          const yMin = Math.min(boxStartPosition.y, e.point.y);
+          const yMax = Math.max(boxStartPosition.y, e.point.y);
+          const zMin = Math.min(boxStartPosition.z, e.point.z);
+          const zMax = Math.max(boxStartPosition.z, e.point.z);
+          const width = xMax - xMin;
+          const height = yMax - yMin;
+          const depth = zMax - zMin;
+          const position = [
+            xMin + width / 2,
+            yMin + height / 2,
+            zMin + depth / 2
+          ];
+          const padding = 0.02;
+          const newBoxes = [
+            ...boxes,
+            {
+              position,
+              size: [width + padding, height + padding, depth + padding],
+              color: 'blue',
+            },
+          ];
+          setBoxes(newBoxes);
+          setBoxStartPosition(null);
+          console.log(newBoxes);
+        }
+      }
   };
 
   const handleNoteChange = (id, text) => {
@@ -291,6 +326,18 @@ export function SpatialView({ meshPath, notes_, measurements_ }) {
           </Sphere>
         </group>
       ))}
+      {boxes.map((box) => (
+        <mesh position={box.position}>
+          <boxGeometry args={box.size} />
+          <meshBasicMaterial color={box.color} opacity={0.3} transparent={true} />
+          <Edges lineWidth={2} color={box.color} />
+        </mesh>
+      ))}
+      {boxStartPosition !== null && (
+        <Sphere position={boxStartPosition} scale={0.02} renderOrder={2} >
+          <meshBasicMaterial color='blue' />
+        </Sphere>
+      )}
     </CustomCanvas>
   );
 }

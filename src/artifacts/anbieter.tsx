@@ -791,6 +791,8 @@ const SalesRepresentativeFlow = () => {
                       //   distance: 1,
                       // },
                     ]}
+                    boxes_={[
+                    ]}
                   />
                   
                 </div>
