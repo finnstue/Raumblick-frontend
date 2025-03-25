@@ -906,7 +906,7 @@ const SalesRepresentativeFlow = () => {
 
                 <div
                   className='flex-1 relative bg-gray-100'
-                  style={{ maxHeight: '600px' }}
+                  style={{ maxHeight: '500px' }}
                 >
                   <SpatialView
                     meshPath='mesh.ply'
@@ -1033,7 +1033,7 @@ const SalesRepresentativeFlow = () => {
 
                 <div
                   className='flex-1 relative bg-gray-100'
-                  style={{ maxHeight: '600px' }}
+                  style={{ maxHeight: '500px' }}
                 >
                   <SpatialView
                     meshPath='mesh.ply'
