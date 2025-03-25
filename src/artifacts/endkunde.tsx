@@ -544,12 +544,12 @@ const CustomerScanningInterface = () => {
         </div>
         
         {/* Demo button */}
-        <button 
+        {/* <button 
           className="w-full py-3 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition flex items-center justify-center"
           onClick={skipToReview}
         >
           Demo anzeigen
-        </button>
+        </button> */}
       </div>
     </div>
   );
