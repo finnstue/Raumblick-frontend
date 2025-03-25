@@ -1402,35 +1402,36 @@ const SalesRepresentativeFlow = () => {
                     <p className="text-sm text-gray-600">
                       Scan-Code: <span className="font-mono font-bold text-blue-600">{scanCode}</span>
                       <br />
-                      Scan-Link: <span className="text-blue-600">raumblick.xyz/scan/{scanCode}</span>
+                      Scan-Link: <span className="text-blue-600">raumblick.example/scan/{scanCode}</span>
                     </p>
                   </div>
                 </div>
 
                 <div className="space-y-2 text-sm text-gray-600">
+                  
                   <div className="flex items-start space-x-2">
                     <div className="w-5 h-5 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-xs font-medium text-blue-600">1</span>
-                    </div>
-                    <p>Laden Sie unsere Scan-App aus dem App Store oder Play Store herunter</p>
-                  </div>
-                  <div className="flex items-start space-x-2">
-                    <div className="w-5 h-5 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-xs font-medium text-blue-600">2</span>
                     </div>
                     <p>Geben Sie den Scan-Code ein oder verwenden Sie den obigen Link</p>
                   </div>
                   <div className="flex items-start space-x-2">
                     <div className="w-5 h-5 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs font-medium text-blue-600">2</span>
+                    </div>
+                    <p>Räumen Sie den Raum auf und sorgen Sie für gute Beleuchtung</p>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <div className="w-5 h-5 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-xs font-medium text-blue-600">3</span>
                     </div>
-                    <p>Räumen Sie den Raum auf und sorgen Sie für gute Beleuchtung vor dem Scannen</p>
+                    <p>Scannen Sie den Raum mit ihrem Smartphone</p>
                   </div>
                 </div>
 
                 <div className="mt-2 pt-2 border-t border-gray-100">
                   <p className="text-xs text-gray-500">
-                    Der Scan-Vorgang dauert etwa 10-15 Minuten. Der Code läuft in 48 Stunden ab.
+                    Der Scan-Vorgang dauert 1-2 Minuten. Der Code läuft in 48 Stunden ab.
                   </p>
                 </div>
               </div>
