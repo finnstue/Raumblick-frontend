@@ -566,8 +566,10 @@ const SalesRepresentativeFlow = () => {
     
     if (scan.status === 'Angebot gesendet') {
       // Set specific quote items based on customer
+      let customerQuotationItems = [];
+      
       if (scan.customerName === 'Anna Müller') {
-        setQuotationItems([
+        customerQuotationItems = [
           {
             id: 201,
             name: 'Executive Desk "Professional Plus"',
@@ -618,60 +620,9 @@ const SalesRepresentativeFlow = () => {
             material: 'Aluminum/Wood',
             dimensions: '60x30x12cm'
           }
-        ]);
-
-        // Show chat interface with Anna's specific messages
-        setChatMessages([
-          {
-            id: 1,
-            sender: 'system',
-            message: 'Angebot gesendet',
-            timestamp: new Date(),
-          },
-          {
-            id: 2,
-            sender: 'sales',
-            message: `
-              <div class="quote-message">
-                <p>Sehr geehrte Frau Müller,</p>
-                <p>wie besprochen sende ich Ihnen das Angebot für Ihr neues Freiraum-Büro. Die ausgewählten Möbel sind auf Ihre Bedürfnisse für produktives und ergonomisches Arbeiten abgestimmt und entsprechen den aktuellen Richtlinien zur Arbeitsplatzsicherheit. Besonders haben wir auf optimalen Lichteinfall und ergonomische Anordnung der Möbel geachtet, um Ihre Gesundheit am Arbeitsplatz zu fördern.</p>
-                <a href="/quote/${scan.id}" class="quote-link">
-                  <div class="quote-preview">
-                    <div class="quote-details">
-                      <span class="quote-title">Büroeinrichtung #A2024-104</span>
-                      <span class="quote-price">${(calculateTotal(quotationItems) * 1.19).toLocaleString()} €</span>
-                    </div>
-                  </div>
-                </a>
-                <p>Die Lieferzeit beträgt 3-4 Wochen. Der Aufbauservice ist im Preis inbegriffen, und wir kümmern uns auch um die fachgerechte Verkabelung Ihres Arbeitsplatzes.</p>
-                <p>Besonders empfehle ich die ergonomische Einstellung der Bürostühle durch unseren Experten, die wir kostenlos anbieten.</p>
-                <p>Haben Sie noch Fragen zum Angebot oder zu einzelnen Produkten? Ich stehe Ihnen gerne zur Verfügung.</p>
-                <p>Mit freundlichen Grüßen,<br/>Finn Stürenburg</p>
-              </div>
-            `,
-            timestamp: new Date(Date.now() - 7200000), // 2 hours ago
-            isHtml: true
-          },
-          {
-            id: 3,
-            sender: 'customer',
-            message: 'Vielen Dank für das detaillierte Angebot! Der Schreibtisch gefällt mir sehr gut. Können Sie mir noch sagen, ob die Tischplatte höhenverstellbar ist?',
-            timestamp: new Date(Date.now() - 3600000) // 1 hour ago
-          },
-          {
-            id: 4,
-            sender: 'sales',
-            message: 'Ja, der "Professional Plus" Schreibtisch ist elektrisch höhenverstellbar von 65-125cm. Perfekt für flexibles Arbeiten im Sitzen und Stehen. Soll ich Ihnen noch die technischen Details der Steuerung zusenden?',
-            timestamp: new Date(Date.now() - 3300000) // 55 minutes ago
-          }
-        ]);
-        setShowSentSuccessScreen(true);
-        return;
-      }
-      
-      // Set Laura's specific quote items
-      if (scan.customerName === 'Laura Schmidt') {
-        setQuotationItems([
+        ];
+      } else if (scan.customerName === 'Laura Schmidt') {
+        customerQuotationItems = [
           {
             id: 101,
             name: 'Modern Sofa "Comfort Plus"',
@@ -712,10 +663,16 @@ const SalesRepresentativeFlow = () => {
             material: 'Engineered Wood',
             dimensions: '180x45x55cm'
           }
-        ]);
+        ];
       }
+      
+      // Calculate the total price for this specific set of items
+      const totalPrice = calculateTotal(customerQuotationItems) * 1.19;
+      
+      // Update quotation items state
+      setQuotationItems(customerQuotationItems);
 
-      // Show chat interface with Laura's specific messages
+      // Create chat messages with the frozen price
       setChatMessages([
         {
           id: 1,
@@ -728,13 +685,13 @@ const SalesRepresentativeFlow = () => {
           sender: 'sales',
           message: `
             <div class="quote-message">
-              <p>Sehr geehrte${customerInfo.name === "Max Mustermann" ? "r" : ""} ${customerInfo.name},</p>
+              <p>Sehr geehrte${scan.customerName === "Max Mustermann" ? "r" : ""} ${scan.customerName},</p>
               <p>ich habe Ihnen soeben ein Angebot zugesendet.</p>
-              <a href="/quote/${selectedScan?.id}" class="quote-link">
+              <a href="/quote/${scan.id}" class="quote-link">
                 <div class="quote-preview">
                   <div class="quote-details">
                     <span class="quote-title">Angebot #1</span>
-                    <span class="quote-price">${(calculateTotal(quotationItems) * 1.19).toLocaleString()} €</span>
+                    <span class="quote-price">${totalPrice.toLocaleString()} €</span>
                   </div>
                 </div>
               </a>
@@ -743,7 +700,8 @@ const SalesRepresentativeFlow = () => {
             </div>
           `,
           timestamp: new Date(),
-          isHtml: true
+          isHtml: true,
+          frozenPrice: totalPrice // Store the price with the message for future reference
         }
       ]);
       setShowSentSuccessScreen(true);
@@ -868,8 +826,11 @@ const SalesRepresentativeFlow = () => {
     navigator.clipboard.writeText(text);
   };
   
-  // Update the handleSendToCustomer function
+  // Update handleSendToCustomer to use the same pattern
   const handleSendToCustomer = () => {
+    // Calculate the total price at the moment of sending
+    const totalPrice = calculateTotal(quotationItems) * 1.19;
+    
     // Update customer status
     setCustomerScans(prevScans => 
       prevScans.map(scan => 
@@ -897,7 +858,7 @@ const SalesRepresentativeFlow = () => {
               <div class="quote-preview">
                 <div class="quote-details">
                   <span class="quote-title">Angebot #1</span>
-                  <span class="quote-price">${(calculateTotal(quotationItems) * 1.19).toLocaleString()} €</span>
+                  <span class="quote-price">${totalPrice.toLocaleString()} €</span>
                 </div>
               </div>
             </a>
@@ -906,7 +867,8 @@ const SalesRepresentativeFlow = () => {
           </div>
         `,
         timestamp: new Date(),
-        isHtml: true
+        isHtml: true,
+        frozenPrice: totalPrice // Store the price with the message
       }
     ]);
     setShowSentSuccessScreen(true);
@@ -1804,7 +1766,7 @@ const SalesRepresentativeFlow = () => {
                     <p className="text-sm text-gray-600">
                       Scan-Code: <span className="font-mono font-bold text-blue-600">{scanCode}</span>
                       <br />
-                      Scan-Link: <span className="text-blue-600">raumblick.com/scan/{scanCode}</span>
+                      Scan-Link: <span className="text-blue-600">raumblick.xyz/scan/{scanCode}</span>
                     </p>
                   </div>
                 </div>
@@ -1846,7 +1808,7 @@ const SalesRepresentativeFlow = () => {
                   <span className="text-sm">Nachricht kopieren</span>
                 </button>
                 <button
-                  onClick={() => copyToClipboard(`https://raumblick.com/scan/${scanCode}`)}
+                  onClick={() => copyToClipboard(`https://raumblick.xyz/scan/${scanCode}`)}
                   className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-50 space-x-2"
                 >
                   <Link size={16} />
