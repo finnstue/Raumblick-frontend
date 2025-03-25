@@ -104,6 +104,7 @@ function Note({ position, text, isOpen, onChange, onToggle, onDelete }) {
               lineHeight: 1,
               outline: 'none', // Remove default focus outline
             }}
+            // disabled={true}
             className='bg-yellow-200'
             autoFocus
             placeholder='Enter text...'
